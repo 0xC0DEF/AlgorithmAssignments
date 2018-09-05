@@ -3,7 +3,6 @@
 #include <ctime>
 #include <chrono>
 
-#define MEDIAN_OF_3 1
 #define THREE_WAY_PART 1
 
 using namespace std;
@@ -204,16 +203,8 @@ private:
 			return;
 		Node *pivot = l;
 		Node *rsave = r;
+		swap(pivot->data, jump(l, rand() % dist(l, r))->data);
 		l = l->next;
-#if MEDIAN_OF_3
-		//median of 3 pivot (for sorted input)
-		Node *t = jump(l, dist(l, r) / 2);
-		pair<int, Node *> tmp[3];
-		tmp[0] = { pivot->data, pivot };
-		tmp[1] = {t->data, t };
-		tmp[2] = {r->data, r };
-		swap(pivot->data, tmp[median_idx_3(tmp)].second->data);
-#endif
 
 		while (l != r)
 		{
@@ -253,14 +244,6 @@ private:
 
 		qsort(pivot, l->prev, desc);
 		qsort(l, rsave, desc);
-	}
-	int median_idx_3(pair<int, Node *> arr[3])
-	{
-		if (arr[1] < arr[0] && arr[0] < arr[2])
-			return 0;
-		if (arr[0] < arr[1] && arr[1] < arr[2])
-			return 1;
-		return 2;
 	}
 
 	//병합정렬
@@ -343,7 +326,7 @@ int main()
 {	
 	srand(time(0));
 
-	const int n = 20000;
+	const int n = 30000;
 	cout << "case: random element, n=" << n << endl;
 	for (int i = 1; i <= 3; i++)
 	{
@@ -410,6 +393,34 @@ int main()
 		List li;
 		for (int i = 0; i < n; i++)
 			li.push_back(i);
+
+		auto start = system_clock::now();
+		li.sort_asc(i);
+		auto end = system_clock::now();
+		duration<double> elapsed = end - start;
+
+		switch (i)
+		{
+		case 1:
+			cout << "exchange sort";
+			break;
+		case 2:
+			cout << "quick sort";
+			break;
+		case 3:
+			cout << "merge sort";
+			break;
+		}
+		cout << ": " << elapsed.count() << endl;
+	}
+	cout << endl;
+
+	cout << "case: desc sorted input, n=" << n << endl;
+	for (int i = 1; i <= 3; i++)
+	{
+		List li;
+		for (int i = 0; i < n; i++)
+			li.push_back(n - i);
 
 		auto start = system_clock::now();
 		li.sort_asc(i);
