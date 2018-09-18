@@ -1,22 +1,24 @@
 ﻿#include <iostream>
 #include <algorithm>
+#include <string>
 #include <ctime>
 #include <chrono>
 
+#define RANDOM_PIVOT 1
 #define THREE_WAY_PART 1
 
 using namespace std;
 using namespace std::chrono;
 
-struct Node
+struct d_node
 {
 	int data;
-	Node *next;
-	Node *prev;
+	d_node *next;
+	d_node *prev;
 
-	Node() :data(0), next(nullptr), prev(nullptr) {}
+	d_node() :data(0), next(nullptr), prev(nullptr) {}
 
-	Node(Node *it, int data) :data(data)
+	d_node(d_node *it, int data) :data(data)
 	{
 		prev = it->prev;
 		next = it;
@@ -25,24 +27,25 @@ struct Node
 	}
 };
 
-struct List
+struct d_list
 {
 	//moc nodes
-	Node *pbegin;//prev of begin
-	Node *end;
+	//moc node를 사용하면 이중연결리스트에서 삽입, 삭제시 null체크할 필요가 없어짐.
+	d_node *pbegin;//prev of begin
+	d_node *end;
 
-	List()
+	d_list()
 	{
-		pbegin = new Node();
-		end = new Node();
+		pbegin = new d_node();
+		end = new d_node();
 		pbegin->next = end;
 		end->prev = pbegin;
 	}
 
-	int size()
+	int list_cnt()
 	{
 		int ret = -1;
-		Node *cur = pbegin;
+		d_node *cur = pbegin;
 		while (cur != end)
 		{
 			ret++;
@@ -51,59 +54,59 @@ struct List
 		return ret;
 	}
 
-	void push_front(int val)
+	void list_insert_head(int val)
 	{
-		new Node(pbegin->next, val);
+		new d_node(pbegin->next, val);
 	}
 
-	void push_back(int val)
+	void list_insert_tail(int val)
 	{
-		new Node(end, val);
+		new d_node(end, val);
 	}
 
-	void insert(int idx, int val)
+	void list_insert_index(int idx, int val)
 	{
-		new Node(at(idx), val);
+		new d_node(list_search_index(idx), val);
 	}
 
-	void pop_front()
+	void list_delete_head()
 	{
 		del(pbegin->next);
 	}
 
-	void pop_back()
+	void list_delete_tail()
 	{
 		del(end->prev);
 	}
-
-	void remove(int val)
+	//val을 data로 갖는 모든 원소를 삭제
+	void list_delete_data(int val)
 	{
-		Node *cur = pbegin->next;
+		d_node *cur = pbegin->next;
 		while (cur != end)
 		{
-			Node *ncur = cur->next;
+			d_node *ncur = cur->next;
 			if (cur->data == val)
 				del(cur);
 			cur = ncur;
 		}
 	}
 
-	void erase(int idx)
+	void list_delete_index(int idx)
 	{
-		del(at(idx));
+		del(list_search_index(idx));
 	}
 
-	Node *at(int idx)
+	d_node *list_search_index(int idx)
 	{
-		Node *ret = pbegin->next;
+		d_node *ret = pbegin->next;
 		for (int i = 0; i < idx; i++)
 			ret = ret->next;
 		return ret;
 	}
 
-	Node *find(int val)
+	d_node *list_search_data(int val)
 	{
-		Node *cur = pbegin->next;
+		d_node *cur = pbegin->next;
 		while (cur != end)
 		{
 			if (cur->data == val)
@@ -113,51 +116,57 @@ struct List
 		return nullptr;
 	}
 
-	void clear()
+	void list_clear()
 	{
 		while (pbegin->next != end)
-			pop_front();
+			list_delete_head();
 	}
 
-	List *clone()
+	void list_copy(d_list &r)
 	{
-		List *ret = new List();
-		Node *cur = pbegin->next;
+		r.list_clear();
+		d_node *cur = pbegin->next;
 		while (cur != end)
 		{
-			ret->push_back(cur->data);
+			r.list_insert_tail(cur->data);
 			cur = cur->next;
 		}
-		return ret;
 	}
 
-	void sort_asc(int op)
+	enum SortAlgorithm
+	{
+		sa_exchange,
+		sa_quick,
+		sa_merge,
+	};
+
+	void list_sort_asc(int op)
 	{
 		switch (op)
 		{
-		case 1:
+		case sa_exchange:
 			esort(false);
 			break;
-		case 2:
+		case sa_quick:
 			qsort(pbegin->next, end->prev, false);
 			break;
-		case 3:
+		case sa_merge:
 			msort(pbegin->next, end->prev, false);
 			break;
 		}
 	}
 
-	void sort_desc(int op)
+	void list_sort_desc(int op)
 	{
 		switch (op)
 		{
-		case 1:
+		case sa_exchange:
 			esort(true);
 			break;
-		case 2:
+		case sa_quick:
 			qsort(pbegin->next, end->prev, true);
 			break;
-		case 3:
+		case sa_merge:
 			msort(pbegin->next, end->prev, true);
 			break;
 		}
@@ -165,8 +174,7 @@ struct List
 
 	void print()
 	{
-		//return;
-		Node *cur = pbegin->next;
+		d_node *cur = pbegin->next;
 		while (cur != end)
 		{
 			cout << cur->data << ' ';
@@ -174,11 +182,12 @@ struct List
 		}
 		cout << endl;
 	}
-private:
-	void del(Node *it)
+
+	//인자로 들어온 node를 삭제한다.
+	void del(d_node *it)
 	{
-		Node *p = it->prev;
-		Node *n = it->next;
+		d_node *p = it->prev;
+		d_node *n = it->next;
 		delete(it);
 		p->next = n;
 		n->prev = p;
@@ -187,23 +196,25 @@ private:
 	//교환정렬(exchange sort)
 	void esort(bool desc)
 	{
-		for (Node *i = pbegin->next; i != end; i = i->next)
-			for (Node *j = i->next; j != end; j = j->next)
-				if (desc ? i->data<j->data : i->data > j->data)
+		for (d_node *i = pbegin->next; i != end; i = i->next)
+			for (d_node *j = i->next; j != end; j = j->next)
+				if (desc ? i->data < j->data : i->data > j->data)
 					swap(i->data, j->data);
 	}
 
 	//퀵정렬
-	void qsort(Node *l, Node *r, bool desc)
+	void qsort(d_node *l, d_node *r, bool desc)
 	{
 		const auto comp = [desc](int a, int b) { return desc ? a >= b : a <= b; };
 
 		//0 또는 1개짜리 리스트는 정렬되있다.
 		if (l == r || l->prev == r)
 			return;
-		Node *pivot = l;
-		Node *rsave = r;
+		d_node *pivot = l;
+		d_node *rsave = r;
+#if RANDOM_PIVOT
 		swap(pivot->data, jump(l, rand() % dist(l, r))->data);
+#endif
 		l = l->next;
 
 		while (l != r)
@@ -247,19 +258,19 @@ private:
 	}
 
 	//병합정렬
-	void msort(Node *l, Node *r, bool desc)
+	void msort(d_node *l, d_node *r, bool desc)
 	{
 		//0 또는 1개짜리 리스트는 정렬되있다.
 		if (l == r || l->prev == r)
 			return;
 
-		Node *m = jump(l, dist(l, r) / 2);
+		d_node *m = jump(l, dist(l, r) / 2);
 		msort(l, m, desc);
 		msort(m->next, r, desc);
 		merge(l, m, r, desc);
 	}
 	//정렬된 두 리스트([l, m], [m+1, r])를 T(n)에 합친다.
-	void merge(Node *l, Node *m, Node *r, bool desc)
+	void merge(d_node *l, d_node *m, d_node *r, bool desc)
 	{
 		auto comp = [desc](int a, int b) { return desc ? a >= b : a <= b; };
 
@@ -267,8 +278,8 @@ private:
 		int *buf = new int[sz];
 		int bufi = 0;
 
-		Node *l1 = l;
-		Node *l2 = m->next;
+		d_node *l1 = l;
+		d_node *l2 = m->next;
 		while (l1 != m->next && l2 != r->next)
 		{
 			if (comp(l1->data, l2->data))
@@ -293,7 +304,7 @@ private:
 			l2 = l2->next;
 		}
 
-		Node *cur = l;
+		d_node *cur = l;
 		for (int i = 0; i < sz; i++)
 		{
 			cur->data = buf[i];
@@ -303,7 +314,7 @@ private:
 		delete[] buf;
 	}
 	//l과 r 사이의 거리를 반환한다.
-	int dist(Node *l, Node *r)
+	int dist(d_node *l, d_node *r)
 	{
 		int ret = 0;
 		while (l != r)
@@ -311,7 +322,7 @@ private:
 		return ret;
 	}
 	//(노드n의 idx)+d를 인덱스로 갖는 노드를 반환한다.
-	Node *jump(Node *n, int d)
+	d_node *jump(d_node *n, int d)
 	{
 		while (d)
 		{
@@ -324,122 +335,116 @@ private:
 
 int main()
 {	
-	srand(time(0));
+	srand((unsigned)time(0));
 
-	const int n = 30000;
+	d_list a;
+	for (int i = 0; i < 20; i++)
+		a.list_insert_tail(rand() % 100);
+	d_list b;
+	for (int i = 0; i < 20; i++)
+		b.list_insert_tail(rand() % 100);
+
+	cout << "list a: "; a.print();
+	cout << "list b: "; b.print();
+	cout << "a.list_cnt(): " << a.list_cnt() << endl;
+	a.list_insert_head(-3);
+	cout << "a.list_insert_head(-3): "; a.print();
+	a.list_insert_tail(10000);
+	cout << "a.list_insert_tail(10000): "; a.print();
+	a.list_insert_index(3, -999);
+	cout << "a.list_insert_index(3, -999): "; a.print();
+	a.list_insert_index(15, 999);
+	cout << "a.list_insert_index(3, 999): "; a.print();
+	a.list_delete_head();
+	cout << "a.list_delete_head(): "; a.print();
+	a.list_delete_tail();
+	cout << "a.list_delete_tail(): "; a.print();
+	a.list_delete_data(-999);
+	cout << "a.list_delete_data(-999): "; a.print();
+	a.list_delete_index(2);
+	cout << "a.list_delete_index(2): "; a.print();
+	cout << "a.list_search_index(5)->data: " << a.list_search_index(5)->data << endl;
+	cout << "a.li.list_search_data(999)->data: " << a.list_search_data(999)->data << endl;
+	a.list_clear();
+	cout << "a.list_clear(): "; a.print();
+	b.list_copy(a);
+	cout << "b.list_copy(a): " << endl;
+	cout << "\tlist a: "; a.print();
+	cout << "\tlist b: "; a.print();
+	a.list_sort_asc(d_list::sa_exchange);
+	cout << "a.list_sort_asc(d_list::sa_exchange): "; a.print();
+	b.list_sort_desc(d_list::sa_exchange);
+	cout << "b.list_sort_desc(d_list::sa_exchange): "; b.print();
+	cout << endl;
+
+	const int n = 33333;
+	string i2name[3] = { "exchange sort" ,"quick sort" , "merge sort" };
+
 	cout << "case: random element, n=" << n << endl;
-	for (int i = 1; i <= 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		List li;
+		d_list li;
 		for (int i = 0; i < n; i++)
-			li.push_back(rand());
-
-		//li.print();
+			li.list_insert_tail(rand());
 
 		auto start = system_clock::now();
-		li.sort_asc(i);
+		li.list_sort_asc(i);
 		auto end = system_clock::now();
 		duration<double> elapsed = end - start;
 
-		//li.print();
-
-		switch (i)
-		{
-		case 1:
-			cout << "exchange sort";
-			break;
-		case 2:
-			cout << "quick sort";
-			break;
-		case 3:
-			cout << "merge sort";
-			break;
-		}
-		cout << ": " << elapsed.count() << endl;
+		cout << i2name[i] << ":" << endl;
+		cout << elapsed.count() << endl;
 	}
 	cout << endl;
 
 	cout << "case: all same element, n=" << n << endl;
-	for (int i = 1; i <= 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		List li;
+		d_list li;
 		for (int i = 0; i < n; i++)
-			li.push_back(1);
+			li.list_insert_tail(1);
 
 		auto start = system_clock::now();
-		li.sort_asc(i);
+		li.list_sort_asc(i);
 		auto end = system_clock::now();
 		duration<double> elapsed = end - start;
 
-		switch (i)
-		{
-		case 1:
-			cout << "exchange sort";
-			break;
-		case 2:
-			cout << "quick sort";
-			break;
-		case 3:
-			cout << "merge sort";
-			break;
-		}
-		cout << ": " << elapsed.count() << endl;
+		cout << i2name[i] << ":" << endl;
+		cout << elapsed.count() << endl;
 	}
 	cout << endl;
 
 	cout << "case: sorted input, n=" << n << endl;
-	for (int i = 1; i <= 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		List li;
+		d_list li;
 		for (int i = 0; i < n; i++)
-			li.push_back(i);
+			li.list_insert_tail(i);
 
 		auto start = system_clock::now();
-		li.sort_asc(i);
+		li.list_sort_asc(i);
 		auto end = system_clock::now();
 		duration<double> elapsed = end - start;
 
-		switch (i)
-		{
-		case 1:
-			cout << "exchange sort";
-			break;
-		case 2:
-			cout << "quick sort";
-			break;
-		case 3:
-			cout << "merge sort";
-			break;
-		}
-		cout << ": " << elapsed.count() << endl;
+		cout << i2name[i] << ":" << endl;
+		cout << elapsed.count() << endl;
 	}
 	cout << endl;
 
 	cout << "case: desc sorted input, n=" << n << endl;
-	for (int i = 1; i <= 3; i++)
+	for (int i = 0; i < 3; i++)
 	{
-		List li;
+		d_list li;
 		for (int i = 0; i < n; i++)
-			li.push_back(n - i);
+			li.list_insert_tail(n - i);
 
 		auto start = system_clock::now();
-		li.sort_asc(i);
+		li.list_sort_asc(i);
 		auto end = system_clock::now();
 		duration<double> elapsed = end - start;
 
-		switch (i)
-		{
-		case 1:
-			cout << "exchange sort";
-			break;
-		case 2:
-			cout << "quick sort";
-			break;
-		case 3:
-			cout << "merge sort";
-			break;
-		}
-		cout << ": " << elapsed.count() << endl;
+		cout << i2name[i] << ":" << endl;
+		cout << elapsed.count() << endl;
 	}
 	cout << endl;
 	
