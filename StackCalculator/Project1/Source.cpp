@@ -29,7 +29,8 @@ struct Token
 	//간결화를 위해 한 연산자인데 두개의 문자를 갖는 괄호쌍()은 우선순위없이 따로 재귀처리하였다
 	int priority() const
 	{
-		assert(op);
+		if(!op)
+			throw "Error";
 		switch (data)
 		{
 		case'+':
@@ -44,13 +45,14 @@ struct Token
 		case'^':
 			return 4;
 		}
-		assert(0);
+		throw "Error";
 	}
 
 	//연관방향 0=left, 1=right
 	int association()
 	{
-		assert(op);
+		if (!op)
+			throw "Error";
 		if (data == '_' || data == '^')//unary minus도 우측연관이라고 봐야함.
 			return 1;
 		return 0;
@@ -161,6 +163,8 @@ int calc(int a, int b, int opd)
 	case'*':
 		return a * b;
 	case'/':
+		if (!b)
+			throw "ERROR";
 		return a / b;
 	case'%':
 		return a % b;
