@@ -94,7 +94,7 @@ vector<Token> parse(char *buf)
 		while (buf[i] == ' ')
 			i++;
 		if (is_op(buf[i]))
-			ret.push_back(Token(true, buf[i] == '-' && (ret.empty() || ret.back().op) ? '_' : buf[i])), i++;
+			ret.push_back(Token(true, buf[i] == '-' && (ret.empty() || (ret.back().op && ret.back().data != ')')) ? '_' : buf[i])), i++;
 	}
 	//다 읽지 않았는데 끝난 경우, 이상한 문자가 들어온 것이다(허용문자: 연산자, 숫자, 공백)
 	if (buf[i])
