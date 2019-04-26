@@ -1,0 +1,83 @@
+﻿프로젝트 주제 : 단어장 관리 프로그램
+담당교수님 : 김 익 수 교수님
+제출일 : 2017. 12. 16.
+팀원 : 20172605 김도현, 201726XX 김하연, 201726XX 석경호, 201726XX 윤석진
+
+
+구조체 설계
+자기참조구조체에 대하여 찾아보았고, 자신을 포인터로 참조하는 구조체임을 알 수 있었습니다. 자기참조구조체를 사용하는 경우로는 그래프, 트리, 연결리스트 등의 자료구조가 있었고, 단어장의 단어는 선형적으로 연결되어있으므로 연결리스트구조가 적합하기 때문에 연결리스트로 구현하였습니다. 구현이 조금 복잡해지지만, 사용이 편리해지는 장점이 있는 이중연결리스트를 선택했습니다. 단어장관리라는 추상적 주제로부터 구체적으로 단어장과 단어장항목을 나누어 구조체로 선언하였습니다.
+
+
+함수 설계
+프로그램 기능별로 함수를 분리하고(Program Functions), 각 기능별 세부구현기능별로 다시 분리하고(Dictionary Management), 구현시 중복되는 부분(Dictionary Management Base & Algorithm)과 기초적인 연결리스트 관련 함수(Linked List)를 분리해내는 단계를 거쳤습니다. 추가적으로 표준입출력관련 함수이 생긴 이유는, 아무입력이나 받기 전까지 멈추기 위해서는 getchar()를 써야하는데, scanf()사용 후에는 버퍼에 \n같은 문자가 남기 때문에 뒤에 버퍼비우는 코드가 같이 쓰여야합니다. 그러면 코드가 지저분해보여서 함수로 Wrapping해 사용했습니다. 협업을 위해서 다소 길더라도 뜻이 명확한 식별자를 선택했습니다.
+
+
+단어장 관리
+단어장 관리 기능(특히 파일입출력)은 전역적으로 필요하므로 제일 먼저 시작했습니다. 구조체를 만들고, 파일 포맷을 정한 다음, 그 형식에 맞는 입출력함수들(Dictionary Management Base)을 만들었습니다. 이후 입출력함수들을 사용하여 단어장 관리 기능의 세부기능들을 구현함으로써 빠르게 프로그램 기본 틀을 잡을 수 있었습니다. 단어장 관리 기능을 만들면서 체계적으로 분리해낸 파일입출력 함수들(특히 ReadDictionaryDataFromFile)은 나머지 프로그램 기능들에서도 유용하게 재사용될 수 있었습니다.
+
+
+함수 설명
+DictionaryItem *NewDictionaryItem();
+	새로운 단어를 만듧니다.
+void DeleteDictionaryItem(DictionaryItem *item);
+	단어를 삭제합니다.
+void ClearDictionary(Dictionary *dic);
+	단어장을 삭제합니다. 단어장에 포함되어있는 모든 단어들도 같이 삭제됩니다.
+void Connect(DictionaryItem *a, DictionaryItem *b);
+	두 단어를 연결합니다.
+void Insert(DictionaryItem *target, DictionaryItem *dest);
+	dest단어를 오른쪽으로 밀어내고 그 자리에 target단어를 연결합니다.
+void Swap(DictionaryItem *a, DictionaryItem *b);
+	a와 b의 위치를 서로 바꿉니다.
+DictionaryItem *GetHead(const DictionaryItem *item);
+	item단어가 속한 리스트의 head단어를 반환합니다.
+DictionaryItem *GetTail(const DictionaryItem *item);
+	item단어가 속한 리스트의 tail단어를 반환합니다.
+DictionaryItem *GetNthNext(const DictionaryItem *head, int n);
+	head로부터 n만큼 떨어진 단어를 반환합니다.
+void Sort(Dictionary *dic);
+	단어장의 단어들을 알파벳 순으로 정렬합니다.
+void RandomShuffle(Dictionary *dic);
+	단어장의 단어들을 무작위로 섞습니다.
+void Sleep(int t);
+	t초 만큼 프로그램을 멈춰둡니다.
+int ReadIntegerFromStdin();
+	표준입출력으로부터 정수를 입력받아 반환합니다. 이 때, 입력버퍼도 같이 비워줍니다.
+char ReadCharacterFromStdin();
+	표준입출력으로부터 문자를 입력받아 반환합니다. 이 때, 입력버퍼도 같이 비워줍니다.
+void ReadFileNameFromStdinWithForm(char *p);
+	정해진 폼을 출력하고 표준입출력으로부터 파일명을 입력받습니다.
+void WriteDictionaryToFile(char *fname, const Dictionary *dic);
+	단어장 정보를 파일에 기록합니다.
+void ReadDictionaryDataFromStdin(Dictionary *dic);
+	단어장 정보를 표준입출력으로부터 읽어들입니다.
+void ReadDictionaryDataFromFile(char *fname, Dictionary *dic);
+	단어장 정보를 파일입출력으로부터 읽어들입니다.
+
+
+실행화면
+ --------------------------------
+ㅣ				ㅣ
+ㅣ				ㅣ
+ㅣ				ㅣ
+ㅣ				ㅣ
+ㅣ				ㅣ
+ㅣ				ㅣ
+ㅣ				ㅣ
+ --------------------------------
+
+
+작업분배와 기여도
+1. 김도현
+	-단어장 관리
+	-Project Management
+	기여도 : 25%
+2. 김하연
+	-영어단어 맞추기
+	기여도 : 25%
+3. 석경호
+	-플래시카드
+	기여도 : 25%
+4. 윤석진
+	-행맨
+	기여도 : 25%
